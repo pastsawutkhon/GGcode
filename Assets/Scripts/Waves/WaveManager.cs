@@ -14,8 +14,7 @@ namespace ATM.Gameplay
         private readonly EnemySpawner spawner;
         private readonly float spawnInterval;
         private readonly HashSet<Enemy> livingEnemies = new();
-        private EnemySpawnSelector selector;
-        private Enemy pendingPrefab;
+        private readonly EnemySpawnSelector selector;
         private float spawnIn;
         private int regularSpawned, regularTarget;
         private bool bossWave;
@@ -23,11 +22,12 @@ namespace ATM.Gameplay
         public int Number { get; private set; }
         public WavePhase Phase { get; private set; } = WavePhase.Completed;
         public bool Cleared => Phase == WavePhase.Completed;
-        public event Action EnemyDefeated;
+        public event Action<Enemy> EnemyDefeated;
 
-        public WaveManager(EnemySpawner spawner, float spawnInterval)
+        public WaveManager(EnemySpawner spawner, float spawnInterval, EnemySpawnSelector selector)
         {
             this.spawner = spawner;
+            this.selector = selector;
             this.spawnInterval = spawnInterval;
         }
 
@@ -36,12 +36,11 @@ namespace ATM.Gameplay
             if (!Cleared)
                 throw new InvalidOperationException("Complete the active wave before starting another.");
 
-            selector = new EnemySpawnSelector(number);
             regularTarget = DifficultyScaler.GetRegularEnemyCount(number);
             bossWave = DifficultyScaler.IsBossWave(number);
             Number = number;
             regularSpawned = 0;
-            pendingPrefab = null;
+            selector.Begin(SpawnRatioCalculator.GetRegularWeights(number), regularTarget);
             spawnIn = InitialDelay;
             Phase = WavePhase.SpawningRegular;
         }
@@ -56,21 +55,17 @@ namespace ATM.Gameplay
                 return;
 
             bool spawningBoss = Phase == WavePhase.WaitingForBoss;
-            if (pendingPrefab == null)
-            {
-                pendingPrefab = spawningBoss
-                    ? spawner.PickBossPrefab()
-                    : spawner.GetRegularPrefab(selector.SelectByRoll(UnityEngine.Random.Range(0, selector.TotalWeight)));
-            }
-
-            // Keep the selected type on retry so spawn availability cannot bias the roll.
-            if (!spawner.TrySpawn(pendingPrefab, Number, out Enemy enemy))
+            if (!spawner.TryFindPoint(spawningBoss, out var point))
             {
                 spawnIn = SpawnRetryDelay;
                 return;
             }
 
-            pendingPrefab = null;
+            int roll = spawningBoss ? 0 : UnityEngine.Random.Range(0, selector.DrawRange);
+            EnemyType type = spawningBoss ? default : selector.Peek(roll);
+            Enemy enemy = spawner.Spawn(point, spawningBoss, type, Number);
+            if (!spawningBoss)
+                selector.Commit(roll);
             livingEnemies.Add(enemy);
             enemy.Died += RecordDefeat;
             spawnIn = spawnInterval;
@@ -103,7 +98,7 @@ namespace ATM.Gameplay
                 }
             }
 
-            EnemyDefeated?.Invoke();
+            EnemyDefeated?.Invoke(enemy);
         }
 
         public void Dispose()

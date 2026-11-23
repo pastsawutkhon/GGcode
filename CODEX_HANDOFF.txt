@@ -1,0 +1,81 @@
+ATM – Arrest That Man | ข้อมูลรับช่วงงานสำหรับ Codex
+สถานะจากไฟล์ในโปรเจกต์ ณ 23 พฤศจิกายน 2026
+
+เปิดโฟลเดอร์ GGcode ใน Codex แล้วใช้เอกสารนี้เป็นบริบท หากยังไม่ได้สั่งงานรายข้อ ให้ใช้รายการ TO DO เป็น backlog สำหรับคุยและเลือกงานก่อนแก้โปรเจกต์
+
+1. เปิดโปรเจกต์และหาฐานงานที่ถูกต้อง
+
+• GGcode เป็นโปรเจกต์ Unity 2D top-down endless wave roguelite ชื่อ ATM – Arrest That Man สำหรับ GI262 ใช้ Unity 6000.5.5f1, URP, Input System, Canvas และ TextMeshPro
+• พาธเครื่องเดิมปัจจุบันคือ C:\Study_Work\UnityProjects\GI262\GGcode เครื่องผู้รับใช้พาธ checkout ของตัวเอง เริ่มจาก git status และ git log แล้วตรวจ ProjectSettings/ProjectVersion.txt
+• ฐานที่ตรวจคือ main ตรงกับ local tracking branch origin/main ที่ commit a7f9951 โดยไม่ได้ fetch จาก remote ในรอบตรวจนี้ ประวัติใกล้เคียงมี 6c01eec Map update, 9d6360c MAP 3, 2fc7671 PlayerAdded และ 0a1412f Enemy
+• อ่าน GAME_DESIGN.md สำหรับกติกาที่ทีมตกลงและค่าทดลอง อ่าน CLASS_DIAGRAM.md สำหรับภาพสถาปัตยกรรม ตรวจโค้ด, prefab และ scene override ก่อนอ้างว่าฟีเจอร์หรือค่าหนึ่งใช้อยู่จริง ชื่อไฟล์จากแชทเก่าอาจต่างกับ repo ปัจจุบัน เช่น Projectile กลายเป็น Bullet และหน้าที่ของ RunWallet อยู่ใน Gold กับ UpgradeCards
+• ใช้ Git branch ของตัวเองเมื่อทำงานคู่กัน ประสานกันก่อนแก้ฉากหรือ prefab เดียวกัน เก็บไฟล์ .meta กับ asset คู่กันเพื่อรักษา GUID หากส่ง ZIP ให้รวม Assets, Packages, ProjectSettings และเอกสารออกแบบ ข้าม Library, Temp, Logs, obj ได้
+• รอบตรวจพบการแก้ค้างเดิมใน GGcode.slnx, Packages/manifest.json และ Packages/packages-lock.json ซึ่งเกี่ยวกับ Unity MCP และไฟล์ solution ที่เครื่องเดิมสร้างเพิ่ม Unity MCP เป็นเครื่องมือสำหรับเครื่องที่ตั้งไว้ ผู้รับใช้ Unity Editor ได้ตามปกติ ให้เทียบ diff ก่อนนำการตั้งค่าเฉพาะเครื่องนี้เข้ากิ่งงาน
+
+2. เล่นและไล่เส้นทางหลักของเกม
+
+• เปิด Assets/Scenes/SampleScene.unity แล้วกด Play ใน Game View ฉากนี้เป็นฉากที่เปิดใช้ใน Build Settings ปัจจุบัน มี Assets/Scenes/MAP 1.unity, MAP 2.unity, MAP 3.unity อยู่แล้ว ทั้งสามมีการผูก GameRunManager, Player, enemy prefabs และจุดเกิดแยกในฉากตามไฟล์ YAML ที่ตรวจ
+• WASD เดิน เมาส์เล็ง คลิกซ้ายหรือกดค้างเพื่อยิง กด 1–3 หรือคลิกการ์ดเพื่อเลือก กด R หรือปุ่ม Reroll ตอนเลือกการ์ด กด R หรือ Restart ที่หน้า Game Over
+• GameRunManager.Start ตรวจ reference แล้วสร้าง EnemySpawner กับ WaveManager เปิด Wave 1 เมื่อกำจัดศัตรูตามเงื่อนไขครบ จะหยุดรับ input ของตัวละครและเก็บ Bullet ที่เหลือ เปิดการ์ด 3 ใบ ชุดแรกฟรี เลือกหนึ่งใบแล้ว Apply กับ Stats และเริ่ม Wave ถัดไปอัตโนมัติ ผู้เล่นตายเข้า GameOver และ Restart โหลดฉากตาม build index เพื่อเริ่ม Run ใหม่
+• HUD แสดง Wave และ Gold มีหลอดเลือดใต้ตัวละครแบบ World Space Canvas หน้าเลือกการ์ดอยู่ใน Canvas ใช้พื้นหลังเป็นแมพ วางการ์ดใหญ่ 3 ใบไว้กลางจอ Title ด้านบน และ Reroll ด้านล่าง ใช้ UpgradeCard.prefab และ UpgradeCardView แสดงรูปตาม Rarity, ชื่อ, เลขโรมัน, โบนัส และค่า Preview ก่อน–หลัง
+• เกมเป็น Endless Wave ใช้ Wave เป็นตัววัดความคืบหน้า ไม่มี Player Level เมื่อผู้เล่นตายให้จบ Run
+
+3. แผนที่ไฟล์และค่าการเล่นปัจจุบัน
+
+• Assets/Scripts/Core/GameRunManager.cs คุม Playing, ChoosingCard, GameOver และประสาน HUD, เงิน, Wave และ Upgrade
+• Assets/Scripts/Characters/Character.cs, CharacterStats.cs, Player.cs และ PlayerController.cs คุม HP, Barrier, สเตตัส, ความเสียหาย, Rigidbody2D movement, การเล็งด้วย Camera.ScreenPointToRay ตัดระนาบ 2D และการกลับแกน Y ของ Aim เมื่อหันซ้าย
+• Assets/Prefabs/Player_Character.prefab มี Base HP 100, Move Speed 5, Attack Speed 20 นัดต่อวินาทีรวมสองปากกระบอก, ATK 12, DEF 0, Range 3, Projectile Count 1 ค่า Attack Speed อยู่ที่ Player → Stats ใน Inspector ให้เช็ก prefab overrides ในแต่ละฉากก่อนจูน
+• Assets/Scripts/Combat/Weapon.cs สลับ Firepoint1/2 ต่อการยิงหนึ่งครั้ง คำนวณแกนยิงจากปากกระบอกที่ใช้จริงไปยังจุดเมาส์เมื่ออยู่ไกลพอ ตั้ง Weapon → Spread Angle เป็นความกว้างเต็มของพัด สุ่มมุมในพัดและแบ่งช่วงเท่ากันเมื่อยิงหลายเม็ด ค่าใน Player prefab คือ 50° รวม (±25°), Projectile Speed 30, Muzzle Flash Duration 0.045 วินาที ค่า 24° และ 30 นัด/วินาทีที่เห็นในแชทรุ่นเก่าเป็นค่าก่อน Player prefab ปัจจุบัน
+• Assets/Scripts/Combat/Bullet.cs และ Assets/Prefabs/Bullet.prefab ใช้ raycast 2D ตามช่วงเดินทางต่อเฟรม หยุดเมื่อโดน Collider แข็งหรือหมดระยะ ข้าม owner และตัวที่ตาย กระสุนฝั่งศัตรูข้ามศัตรูด้วยกัน หาง LineRenderer ติดกับกระสุนและยาวสูงสุด 0.6 หน่วย แฟลชแสดงที่ปากกระบอกที่ยิงจริง การเดินตัดแนวยิงอาจเห็นกระสุนแต่ละนัดแยกจากกันตามจุดเกิดและมุม Spread ที่ต่างกัน สเปกที่ตกลงคือคงวิถีเดิมและอ่านภาพง่ายด้วยหางสั้นและแฟลช
+• Assets/Scripts/Camera/SmoothCameraFollow.cs ตามตัวละครด้วย SmoothDamp และจำกัดขอบกล้อง Orthographic ตาม bounds ของ SpriteRenderer แมพที่ PlayerController อ้างถึง เมื่อเปลี่ยนแมพหรือสัดส่วน Game View ให้เช็กกล้องและขอบเดินร่วมกัน
+• Assets/Scripts/Enemies/Enemy.cs เป็นฐานให้ MeleeEnemy, RangedEnemy, FastEnemy, BossEnemy มี prefab ทั้งสี่ Melee/Fast/Boss รุ่นปัจจุบันไล่และโจมตีประชิด โดย Fast วิ่งเร็วกว่า Ranged เข้าระยะแล้วหยุดยิง Bullet ด้วย speed 7, attack range 4, ระยะกระสุน 6 ตาม prefab/code ค่าฐาน HP/Move Speed/ATK/Attack Speed ของ Melee คือ 48/2.35/12/1.1, Fast 32/3.6/9/1.25, Ranged 37/1.8/8/0.7 และ Boss 230/1.6/20/0.85 โดย Boss มี DEF 3
+
+4. Wave, Enemy Scaling และ Boss
+
+• ดู Assets/Scripts/Waves/WaveManager.cs, EnemySpawner.cs, EnemySpawnSelector.cs, SpawnRatioCalculator.cs และ DifficultyScaler.cs
+• จำนวนศัตรูปกติเป็น min(8 + 2 × floor((wave−1)/3), 40) เพดานนี้คุมจำนวนที่จะเกิดต่อ Wave เริ่มเกิดหลัง 1 วินาที และระยะระหว่าง Spawn ที่ตั้งในฉากคือ 0.65 วินาที ตัวที่อยู่ในสนามอาจสะสมได้
+• ใช้ Weighted Random ต่อการเกิดหนึ่งตัว ตามลำดับ Melee/Ranged/Fast มี Wave 1–4 = 100/0/0, 5–9 = 70/30/0, 10–19 = 60/25/15, 20–39 = 50/30/20, 40+ = 40/35/25 น้ำหนักเป็นโอกาสของการสุ่มแต่ละครั้ง จำนวนที่เกิดจริงจึงเปลี่ยนได้
+• EnemySpawner ตรวจจุดเกิดให้ห่างผู้เล่นขั้นต่ำ 3 หน่วย และเช็ก Collider รอบจุดด้วย clearance อย่างน้อย 0.55 หน่วยหรือค่าของ prefab เมื่อเกิดไม่ได้ WaveManager รอ 0.2 วินาทีแล้วลองด้วยประเภทที่สุ่มไว้ เพิ่มตัวนับเมื่อเกิดสำเร็จ
+• Boss Wave คือเลขที่หารด้วย 10 ลงตัว หลังเกิดศัตรูปกติครบและตายหมด จึงสุ่ม prefab จาก bossPrefabs แล้วเกิด Boss ต้องฆ่า Boss จึงเปิดการ์ด ปัจจุบันฉากอ้าง Boss พื้นฐานหนึ่งแบบ โค้ดรองรับรายการหลาย prefab ส่วนท่าโจมตีเฉพาะอยู่ใน backlog
+• HP ศัตรู = BaseHP × 1.07^(wave−1), ATK = BaseATK × 1.045^(wave−1), DEF = BaseDEF + 0.5 × (wave−1) Damage หลัง DEF = rawDamage/(1+DEF/100) แล้วดูดซับด้วย Barrier ก่อนลด HP สูตรนี้แยกจาก Gold และ Rarity
+
+5. การ์ด, Luck และ Gold
+
+• Assets/Scripts/Upgrades/UpgradeCards.cs มีชนิด Heal, Max HP %, ATK, Fire Rate, Range, Luck สุ่มชนิดต่างกัน 3 ใบในชุดเดียว สุ่ม Rarity แต่ละใบแยกกัน จึงออก Tier ซ้ำได้ การสุ่มใช้ชุดชนิดจาก enum สำหรับ offer ปัจจุบัน ไม่มีสต็อกการ์ดให้หมด ผู้เล่นเลือกชนิดเดิมอีกใน Wave ถัดไปได้
+• Tier I–V คือ Common, Uncommon, Rare, Epic, Legendary ตามลำดับ ตารางค่าตาม Tier อยู่ด้านล่างและใน GAME_DESIGN.md
+  - Heal เป็น % Max HP: 20/40/70/90/100 โดย Legendary เพิ่ม Barrier อีก 25% ของ Max HP
+  - Max HP: +5/+10/+15/+20/+25%, ATK: +10/+15/+20/+25/+30%
+  - Fire Rate: +10/+20/+30/+40/+50%, Range: +5/+10/+15/+20/+25%
+  - Luck: +5/+10/+15/+20/+25 หน่วย เริ่มที่ 100
+• โบนัส Max HP/ATK/Fire Rate/Range สะสมแบบ Base × (1 + ผลรวมโบนัส %) เพิ่ม Max HP แล้วฟื้น HP ตามส่วนต่างของเพดาน Heal จำกัด CurrentHP ที่ MaxHP และยังขึ้นได้แม้เลือดเต็ม Barrier สะสมและอยู่ข้าม Wave จนดูดดาเมจหมด ก่อนพัฒนาการ์ดใหม่ให้เทียบ Apply และ BuildPreview ให้ตรงกัน
+• Assets/Scripts/Upgrades/UpgradeRarityCalculator.cs คือแหล่งคำนวณ Rarity ใช้ Wave ที่เพิ่งเคลียร์และ Luck ทั้งตอนเปิดชุดแรกและตอน Reroll คำนวณเปอร์เซ็นต์ครั้งเดียวต่อชุด แล้วสุ่มสามครั้ง Wave 1 ที่ Luck ฐานมี Common 63.8%, Uncommon 25%, Rare 10%, Epic 1%, Legendary 0.2% สูตรใช้ Growth, การจัดสรรตาม Priority, Soft Cap แบบ Snapshot, Luck และ Conditional Minimum Protection โดยคุม Legendary ไม่เกิน 15% ถ้าจะปรับสูตรหรือค่าคงที่ ให้คุยกับทีมก่อน
+• Assets/Scripts/Economy/Gold.cs เก็บยอดเฉพาะ Run เริ่ม 0 จากนั้นให้ Gold เข้ากระเป๋าทันทีเมื่อศัตรูตาย เป็น floor(10 × 1.2^(wave−1)) ต่อตัว เช่น Wave 1 ได้ 10, Wave 2 ได้ 12, Wave 3 ได้ 14 ตอนนี้มีเครดิตทองทันทีอยู่แล้ว ส่วน Gold drop ที่เป็นไอเท็มเก็บบนพื้นอยู่ใน TO DO
+• ราคาจาก UpgradeCards.RerollCost เริ่มฟรีครั้งแรกของแต่ละ Run แยกจากชุดแรกฟรีที่ได้หลังเคลียร์ Wave จากนั้น 10 → 12 → 14 → 17 → 20 → 24 Gold สูตรใช้ floor(10 × 1.2^(n−1)) เมื่อเคย Reroll สำเร็จ n ครั้งและ n ≥ 1 ค่า n สะสมข้าม Wave จนจบ Run ตรวจเงินก่อนสุ่ม ถ้าเงินไม่พอให้คงชุดและราคาเดิม ปัจจุบันหน้า Game Over แสดง Wave ที่ไปถึง
+
+6. จุดค้าง, ความเสี่ยง และสิ่งที่ต้องยืนยัน
+
+• จุดค้างที่ตรวจพบจากการตั้งค่า: Build Settings เปิดเฉพาะ SampleScene ส่วน MAP 1–3 ยังไม่อยู่ในรายการ Restart โหลดด้วย gameObject.scene.buildIndex ดังนั้นการเปิด MAP โดยตรงแล้วกด Restart มีความเสี่ยงจาก buildIndex ที่ใช้โหลดไม่ได้ ต้องแก้หรือกำหนดเส้นทาง Restart ให้ชัดก่อนเชื่อมการเปลี่ยนฉาก นี่เป็นข้อสังเกตจากไฟล์ ยังไม่ได้รันให้เกิด error ใน checkout ล่าสุด
+• การเปลี่ยนแมพทุก 10 Wave ยังต้องเชื่อม แมพทั้งสามเป็นฉากแยกที่มี Run Manager ของตัวเองและ Start เริ่ม Wave 1 หากสลับฉากตรง ๆ ต้องออกแบบให้ Wave, Stats, HP/Barrier/Luck, Gold และตัวนับ Reroll เป็นของ Run เดียวกัน การเทสต้องครอบคลุม Boss → เลือกการ์ด → เปลี่ยนแมพ → Wave 11/21
+• AI ตอนนี้ใช้การขยับตรงเข้าหาเป้าหมาย ให้ทดสอบศัตรูติดสิ่งกีดขวาง จุดเกิดถูกบล็อกทุกจุด และศัตรูตัวสุดท้ายเข้าถึงได้ในแต่ละแมพ Ranged ปัจจุบันเช็กระยะก่อนยิง ให้ทดสอบกรณีกำแพงอยู่ระหว่างผู้เล่นกับศัตรู งาน Laser ต้องกำหนด Line of Sight และเวลาบอกใบ้ให้ทีมเห็นตรงกัน
+• ประวัติการทดสอบของแชทเดิมมี Wave 1 → เลือกการ์ด → Wave 2 → ตาย → Restart, Reroll แบบเสียเงิน, การเล็งสองด้าน, การเดินยิงตัดและ VFX ตอนนั้นผ่านใน Play Mode แต่เป็นคนละ revision ก่อนโครงสร้างล่าสุด รอบส่งต่อนี้ตรวจไฟล์บนดิสก์เท่านั้น ยังไม่ได้ยืนยัน Play Mode หรือ build ที่ a7f9951 ชุด Edit Mode Tests เรื่องสูตร Rarity เคยผ่าน 20 เคสใน revision เก่า แต่ไม่พบไฟล์ชุดนั้นใน Assets ของ checkout ปัจจุบัน อย่าใช้ผลเก่าแทนการตรวจสูตรที่มี Luck
+• ถ้าเล็ง/ยิงไม่ตอบสนองใน Editor ให้เช็ก Game View focus และ Device Simulator ก่อน รอบเก่าเคยพบ Simulator ปิดเมาส์ RawInput ชั่วคราว เมื่อทดสอบอีกครั้งควรคลิก Game View แบบ Play Focused
+
+7. TO DO จากภาพและเงื่อนไขรับงาน
+
+1) Character Design (Player, Enemy) — ทำภาพ/animation ตัวจริงและแยกสี รูปทรง หรือ silhouette ให้ผู้เล่นแยก Melee/Fast/Ranged/Boss ได้ทันที รักษาขนาด Collider, จุดยิง, Aim flip และตำแหน่งหลอดเลือดเมื่อแทน art ยืนยันชุดภาพและ animation ที่ทีมต้องการก่อนทำจำนวนมาก
+2) Map Design — ตรวจ MAP 1–3 ที่มีอยู่ก่อน เติมผัง อุปสรรค ขอบกล้องและ spawn layout ให้เล่นได้ เปิดตรวจ Collider ของผนังทั้งเดินชนและยิงชน รวมถึงระยะกล้องหลายอัตราส่วน
+3) Map Pool (สุ่มทุก 10 Wave) — สุ่มแมพใหม่หลังฆ่า Boss ใน Wave 10/20/30… และเลือกการ์ดก่อน แล้วเข้า Wave ถัดไปทันที คงสถานะ Run ทั้งหมด ตัดสินใจกับทีมว่าจะให้สุ่มซ้ำฉากเดิมติดกันได้หรือไม่ และใช้ฉากแยกหรือ prefab ระดับแมพ
+4) Main Menu + Permanent Upgrade — เพิ่มเมนูเข้า Run และหน้าซื้อ permanent base stats จากเงินนอก Run ตามแผนหลักรองรับ HP, ATK, DEF และโบนัสเงิน แยกข้อมูล Profile ออกจากบัฟเฉพาะ Run กำหนดเซฟ ราคา และเพดานร่วมกับทีม ทดสอบปิดเกมแล้วข้อมูลซื้อยังอยู่ และ Restart ล้างเฉพาะของ Run
+5) Boss Enemy + Attack Move — ขยายจาก Boss ประชิดหนึ่งแบบให้มีท่าโจมตีที่อ่านจังหวะได้ เช่น มีช่วงบอกใบ้ โจมตี และพัก หลังเพิ่มท่าทดสอบว่า Boss ยังเกิดหลัง regular ทั้งหมดตาย และตายแล้วจึงเปิดการ์ด จำนวนรุ่นและพฤติกรรมการเลือกเป็นเรื่องให้ทีมกำหนด
+6) Ranged Enemy + Laser Shot — ต่อยอด Ranged ที่ยิง Bullet อยู่แล้ว ให้ทีมกำหนดว่า Laser เป็น ray ยิงทันทีหลังชาร์จหรือเป็น projectile ติดภาพเลเซอร์ ทดสอบมุม, ระยะ, ผนังขวาง, ไม่มี friendly fire ของศัตรู และจังหวะที่ผู้เล่นหลบได้
+7) Upgrade Card + Various Stats/Types — ต่อยอดจากการ์ด 6 ชนิดที่ใช้งานจริง เช่น Multishot, Pierce, Explosion ตามเอกสาร ออกแบบผลและตัวเลขก่อนเพิ่มและเก็บเส้นทาง Preview กับ Apply ให้ตรงกัน ทดสอบ Tier ซ้ำได้ใน 3 ใบและกดรับได้แค่หนึ่งครั้ง
+8) UI Result + Economy — เพิ่ม Highest Wave, Total Earned, Total Spent, Remaining Gold และเชื่อมการโอนเงินคงเหลือเข้า Profile ตามเอกสาร ตรวจ Earned − Spent = Remaining และโอนหนึ่งครั้งต่อ Run แม้กดปุ่มซ้ำหรือโหลดฉากใหม่
+9) Bullet Pool — โค้ดปัจจุบัน Instantiate ทั้งฝั่ง Player และ Ranged และ Destroy เมื่อ Despawn ออกแบบการคืน pool ให้ครอบคลุมชน, หมดระยะ, เปิดการ์ด, ตาย และเปลี่ยนแมพ ตอนนำกลับใช้ต้องรีเซ็ต owner/ฝ่าย, ทิศ/ความเร็ว, range, damage, การเปิดสคริปต์, ตำแหน่ง และ LineRenderer ตลอดจนป้องกันคืนซ้ำ ทดสอบยิงต่อเนื่องและกระสุนสองฝ่าย
+10) Gold Drop — เพิ่ม pickup หรือภาพดรอปตามกติกาที่ทีมเลือก ถ้าเป็นการเก็บจริง ย้ายจังหวะเครดิตจาก EnemyDefeated ไปที่ pickup และกันได้ซ้ำ ยึดสูตรตาม Wave ที่ศัตรูเกิด/ถูกกำจัดตามการออกแบบ และตกลงการจัดการทองที่ยังอยู่พื้นตอนเปิดการ์ด/เปลี่ยนแมพ/จบ Run
+
+8. วิธีเริ่มตรวจและแบ่งงานกับทีม
+
+• Smoke test ฐานงานด้วย SampleScene ก่อน ทำ Wave 1 → ยิงจนศัตรูตาย → Gold ถูกเพิ่ม → การ์ด 3 ใบ → Reroll ฟรีครั้งแรก → ตรวจราคา 10 และเงินไม่พอถ้าจำลองได้ → เลือกการ์ดแล้ว Stats เปลี่ยน → Wave 2 → ตาย → Restart แล้ว HP, Gold, Reroll กลับฐาน
+• จากนั้นเช็ก Wave 5 (Ranged เริ่มมีโอกาส), Wave 10 (Fast เริ่มมีโอกาสและ Boss เกิดหลัง regular), และ Play ทั้ง MAP 1–3 ตรวจ Console, จุดเกิด, อุปสรรคและกล้อง แยกผลที่พิสูจน์ด้วยการเล่นจริงออกจากผลที่อ่านโค้ดหรือป้อน state ทดสอบ
+• ถ้าเริ่มทำ Map Pool ให้ตกลงการส่งสถานะ Run ข้ามแมพก่อน ถ้าเริ่มทำ Economy ให้แยกยอด Run กับยอดถาวรตั้งแต่แบบข้อมูล ถ้าเริ่มทำอาวุธศัตรู ให้ใช้ระบบตรวจฝ่ายและการชนจาก Bullet เดิมตามเหมาะสม
+• คุยกันว่าใครรับไฟล์ฉากและ prefab ใด บันทึกไว้ในสรุปหรือ PR ว่าแก้อะไร ค่าไหนเป็นค่าทดลอง เทสอะไรจริง และมีอะไรที่ทีมต้องตัดสินใจ ต่อหนึ่งงานส่งเป็นการเปลี่ยนแปลงที่เปิดทดสอบได้

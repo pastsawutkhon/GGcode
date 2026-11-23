@@ -13,6 +13,13 @@ namespace ATM.Gameplay
         private float preferredSize;
         private Vector2 velocity;
 
+        private double lastPulse = -1;
+        private Vector2 shakeOffset;
+        public void Pulse()
+        {
+            if (Time.timeAsDouble - lastPulse >= .25) lastPulse = Time.timeAsDouble;
+        }
+
         private void Awake()
         {
             followCamera = GetComponent<Camera>();
@@ -23,10 +30,10 @@ namespace ATM.Gameplay
 
         private void LateUpdate()
         {
-            if (target == null)
+            if (Time.timeScale == 0f || target == null)
                 return;
 
-            Vector3 position = transform.position;
+            Vector3 position = transform.position - (Vector3)shakeOffset;
             Vector2 destination = target.position;
             SpriteRenderer map = playerController != null ? playerController.Map : null;
             Vector2 next;
@@ -56,7 +63,10 @@ namespace ATM.Gameplay
                 next = Vector2.SmoothDamp(position, destination, ref velocity, smoothTime);
             }
 
-            transform.position = new Vector3(next.x, next.y, position.z);
+            float age = (float)(Time.timeAsDouble - lastPulse);
+            float intensity = .045f * Mathf.Clamp01(1f - age / .11f);
+            shakeOffset = intensity * new Vector2(Mathf.Sin(age * 140), Mathf.Sin(age * 190));
+            transform.position = new Vector3(next.x + shakeOffset.x, next.y + shakeOffset.y, position.z);
         }
 
         private static Vector2 ClampCenter(Vector2 position, Vector2 min, Vector2 max) =>

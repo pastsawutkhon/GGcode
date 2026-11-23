@@ -9,6 +9,31 @@ namespace ATM.Waves
 
         public static bool IsBossWave(int wave) => (GetCompletedWaves(wave) + 1) % 10 == 0;
 
+        public static float GetBossHP(int wave) => ScaleBossStat(wave, 3500d, 5800d);
+
+        public static float GetBossAttack(int wave) => ScaleBossStat(wave, 150d, 200d);
+
+        private static float ScaleBossStat(int wave, double previous, double current)
+        {
+            if (!IsBossWave(wave))
+                throw new ArgumentOutOfRangeException(nameof(wave), "Expected a boss wave.");
+
+            int bossIndex = wave / 10;
+            if (bossIndex == 1)
+                return (float)previous;
+
+            for (int index = 2; index < bossIndex; index++)
+            {
+                double next = previous + current;
+                if (next >= float.MaxValue)
+                    return float.MaxValue;
+                previous = current;
+                current = next;
+            }
+
+            return (float)current;
+        }
+
         public static float ScaleHP(float baseHP, int wave) =>
             ScaleExponential(baseHP, 1.07, GetCompletedWaves(wave));
 

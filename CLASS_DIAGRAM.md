@@ -2,7 +2,29 @@
 
 ตรวจเทียบสคริปต์เกม 24 ไฟล์ใน `Assets/Scripts` กับ `SampleScene` และ Prefab ที่บันทึกไว้ ณ 17 พฤศจิกายน 2026 ใช้ [GAME_DESIGN.md](GAME_DESIGN.md) เป็นเกณฑ์เทียบ
 
-## Class Diagram ของ Prototype ปัจจุบัน
+## ระบบที่เปลี่ยนในวันที่ 23 พฤศจิกายน 2026
+
+```mermaid
+flowchart LR
+    WaveManager -->|reserve wave quota| EnemySpawnSelector
+    WaveManager -->|find valid marker| EnemySpawner
+    EnemySpawner --> ArenaRoutes
+    WaveManager -->|enemy defeated| GameRunManager
+    GameRunManager --> GoldPickup
+    GoldPickup --> Gold
+    GameRunManager -->|card chosen after boss| NextMap[Next map scene]
+    GameRunManager -->|escape banks net gold| PrecinctProfile
+    GameRunManager -->|death scores zero| RunHud
+    PlayerController --> Player
+    DirectionalCharacter --> PlayerArt[Directional sprites]
+    Weapon -->|rent projectile| Bullet
+```
+
+`EnemySpawnSelector.Begin(weights, count)` เตรียมโควตารายเวฟ `EnemySpawner.TryFindPoint` คัดจุดตามพื้นที่และกล้อง แล้ว `Peek / Spawn / Commit` สร้างศัตรูก่อนหักโควตา Run ถือ selector ไว้ข้ามแมพ RangedEnemy ใช้ LineRenderer และ Raycast ยิงเลเซอร์ Weapon ใช้กระสุนซ้ำจาก Pool ดูกติกาและตารางการ์ดปัจจุบันใน [GAME_DESIGN.md](GAME_DESIGN.md)
+
+## ภาพโครงสร้างก่อนปรับระบบ (17 พฤศจิกายน 2026)
+
+แผนภาพและตารางด้านล่างบันทึก Prototype รุ่นก่อนเพิ่มเมนู ระบบโควตา แมพหมุนเวียน และ Training
 
 แสดงสมาชิกหลักที่ใช้เชื่อมระบบ `+` คือ public, `-` คือ private, `#` คือ protected และ `~` คือ internal
 
@@ -305,7 +327,7 @@ classDiagram
 2. **Level Scaling** — `Enemy.Spawn() → CharacterStats.ScaleForWave() → DifficultyScaler` HP และ ATK โตจากค่า Base แบบ Exponential ส่วน DEF เพิ่มแบบเส้นตรง เพดาน 40 ใช้กับจำนวนศัตรูปกติต่อ Wave [DifficultyScaler.cs](Assets/Scripts/Waves/DifficultyScaler.cs)
 3. **Card และ Reroll** — เมื่อ `WaveManager.Cleared` เป็นจริง `GameRunManager` ขอชุดจาก `UpgradeCards` แล้วให้ `RunHud` แสดงผ่าน `UpgradeCardView` การกดเลือกเรียก `UpgradeCard.Apply()` ก่อนเริ่ม Wave ถัดไป ส่วน Reroll ใช้ Wave ที่เพิ่งเคลียร์และ Luck ปัจจุบัน หักเงินผ่าน `Gold.TrySpend()` แล้วเพิ่มจำนวนครั้งเมื่อสำเร็จ [UpgradeCards.cs](Assets/Scripts/Upgrades/UpgradeCards.cs) · [GameRunManager.cs](Assets/Scripts/Core/GameRunManager.cs)
 
-## สิ่งที่ยังต้องเติมเมื่อเทียบกับ Game Design
+## งานที่ระบุไว้ในรุ่น 17 พฤศจิกายน
 
 | ระบบ | สถานะใน Prototype | งานที่ยังขาด |
 | --- | --- | --- |

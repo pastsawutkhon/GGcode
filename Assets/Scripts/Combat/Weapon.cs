@@ -83,7 +83,7 @@ namespace ATM.Gameplay
             {
                 float offset = leftEdge + (i + Random.value) * sectorWidth;
                 Quaternion rotation = Quaternion.AngleAxis(aimAngle + offset, Vector3.forward);
-                Bullet shot = Instantiate(bulletPrefab, origin, rotation);
+                Bullet shot = Bullet.Rent(bulletPrefab, origin, rotation);
                 shot.Launch(owner, rotation * Vector3.right, projectileSpeed, stats.ProjectileRange, stats.AttackDamage);
             }
         }

@@ -12,12 +12,14 @@ namespace ATM.Gameplay
         [SerializeField] private SpriteRenderer map;
         [SerializeField] private Transform aimPivot;
         private Player player;
-        private SpriteRenderer body;
+        private Collider2D movementCollider;
         private Rigidbody2D movementBody;
         private Vector2 moveInput;
         private Vector3 aimScale;
         private Vector2 aimDirection = Vector2.right;
         private int enabledFrame;
+        private float dashLeft;
+        private Vector2 dashDirection;
 
         internal SpriteRenderer Map => map;
 
@@ -26,6 +28,7 @@ namespace ATM.Gameplay
         private void OnDisable()
         {
             moveInput = Vector2.zero;
+            dashLeft = 0f;
             if (movementBody != null)
                 movementBody.linearVelocity = Vector2.zero;
         }
@@ -33,7 +36,7 @@ namespace ATM.Gameplay
         private void Awake()
         {
             player = GetComponent<Player>();
-            body = GetComponent<SpriteRenderer>();
+            movementCollider = GetComponent<Collider2D>();
             movementBody = GetComponent<Rigidbody2D>();
             if (aimCamera == null)
                 aimCamera = Camera.main;
@@ -47,6 +50,7 @@ namespace ATM.Gameplay
 
         private void Update()
         {
+            if (Time.timeScale == 0f) return;
             Keyboard keyboard = Keyboard.current;
             if (keyboard == null)
             {
@@ -57,6 +61,13 @@ namespace ATM.Gameplay
             float x = (keyboard.dKey.isPressed ? 1 : 0) - (keyboard.aKey.isPressed ? 1 : 0);
             float y = (keyboard.wKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed ? 1 : 0);
             moveInput = new Vector2(x, y).normalized;
+            player.Stats.TickDash(Time.deltaTime);
+            if (keyboard.spaceKey.wasPressedThisFrame && dashLeft <= 0 && player.Stats.UseDash())
+            {
+                dashDirection = moveInput == Vector2.zero ? aimDirection : moveInput;
+                dashLeft = .16f;
+                player.Protect(player.Stats.DashProtection);
+            }
         }
 
         private void FixedUpdate()
@@ -65,12 +76,17 @@ namespace ATM.Gameplay
                 return;
 
             Vector2 velocity = moveInput * player.Stats.MoveSpeed;
+            if (dashLeft > 0)
+            {
+                velocity = dashDirection * 14f;
+                dashLeft -= Time.fixedDeltaTime;
+            }
             if (map != null)
             {
                 Vector2 current = movementBody.position;
                 Vector2 target = current + velocity * Time.fixedDeltaTime;
                 Bounds floor = map.bounds;
-                Vector3 padding = body.bounds.extents;
+                Vector3 padding = movementCollider.bounds.extents;
                 target.x = Mathf.Clamp(target.x, floor.min.x + padding.x, floor.max.x - padding.x);
                 target.y = Mathf.Clamp(target.y, floor.min.y + padding.y, floor.max.y - padding.y);
                 velocity = (target - current) / Time.fixedDeltaTime;
@@ -80,7 +96,7 @@ namespace ATM.Gameplay
 
         private void LateUpdate()
         {
-            if (!player.IsAlive || aimPivot == null || aimCamera == null)
+            if (Time.timeScale == 0f || !player.IsAlive || aimPivot == null || aimCamera == null)
                 return;
 
             Mouse mouse = Mouse.current;

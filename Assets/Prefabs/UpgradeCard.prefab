@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Healing 40% of Max HP
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 22bad10691319fd46a9820f082da830d, type: 2}
+  m_sharedMaterial: {fileID: 8398732713258266607, guid: 22bad10691319fd46a9820f082da830d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -96,8 +96,8 @@ MonoBehaviour:
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 12
-  m_fontSizeMax: 28
+  m_fontSizeMin: 16
+  m_fontSizeMax: 31
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -198,6 +198,8 @@ GameObject:
   - component: {fileID: 1762986789174262043}
   - component: {fileID: 6524605988083900815}
   - component: {fileID: 7560863778107343211}
+  - component: {fileID: 1039360115834492775}
+  - component: {fileID: 5142705471570334100}
   m_Layer: 5
   m_Name: UpgradeCard
   m_TagString: Untagged
@@ -330,6 +332,33 @@ MonoBehaviour:
   rareArt: {fileID: 21300000, guid: f2b94d53eeae95344b821d3801eebb2a, type: 3}
   epicArt: {fileID: 21300000, guid: 57d51db9b6f589d4181f435d3c4b7d28, type: 3}
   legendaryArt: {fileID: 21300000, guid: 5ba769813163ca647b62a22b5d8109d6, type: 3}
+--- !u!114 &1039360115834492775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5343440500734851889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfabb0440166ab443bba8876756fdfa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Shadow
+  m_EffectColor: {r: 0.04, g: 0.045, b: 0.05, a: 0.48}
+  m_EffectDistance: {x: 3, y: -12}
+  m_UseGraphicAlpha: 1
+--- !u!114 &5142705471570334100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5343440500734851889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31c14e790ae74f647ac48dbe40d256b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ATM.Gameplay.CardLift
 --- !u!1 &7521528921186915024
 GameObject:
   m_ObjectHideFlags: 0
@@ -397,8 +426,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: HEAL
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8912c30b32478f0498851ab36538bb50, type: 2}
+  m_sharedMaterial: {fileID: 2348213790470933602, guid: 8912c30b32478f0498851ab36538bb50, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -426,8 +455,8 @@ MonoBehaviour:
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 12
-  m_fontSizeMax: 44
+  m_fontSizeMin: 16
+  m_fontSizeMax: 53
   m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -534,8 +563,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Current HP 18% \u2192 58%"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 22bad10691319fd46a9820f082da830d, type: 2}
+  m_sharedMaterial: {fileID: 8398732713258266607, guid: 22bad10691319fd46a9820f082da830d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -563,8 +592,8 @@ MonoBehaviour:
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 12
-  m_fontSizeMax: 22
+  m_fontSizeMin: 16
+  m_fontSizeMax: 24
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -671,8 +700,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: II
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8912c30b32478f0498851ab36538bb50, type: 2}
+  m_sharedMaterial: {fileID: 2348213790470933602, guid: 8912c30b32478f0498851ab36538bb50, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -700,8 +729,8 @@ MonoBehaviour:
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 12
-  m_fontSizeMax: 42
+  m_fontSizeMin: 16
+  m_fontSizeMax: 46
   m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
