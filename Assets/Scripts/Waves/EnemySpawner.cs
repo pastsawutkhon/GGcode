@@ -58,7 +58,6 @@ namespace ATM.Gameplay
                     Physics2D.OverlapCircle(position, radius, solids, obstruction) > 0 ||
                     !routes.CanReach(position, target))
                     continue;
-                // Reservoir sampling gives every valid marker the same chance.
                 if (Random.Range(0, ++valid) == 0)
                     point = candidate;
             }

@@ -1,0 +1,893 @@
+classDiagram
+    direction TB
+
+    class SmoothCameraFollow["SmoothCameraFollow"] {
+        -Transform target
+        -float smoothTime
+        -Camera followCamera
+        -PlayerController playerController
+        -float preferredSize
+        -Vector2 velocity
+        -double lastPulse
+        -Vector2 shakeOffset
+        -double lastTremor
+        -float tremorStrength
+        ~Tremor(float strength) void
+        +Pulse() void
+        -Awake() void
+        -LateUpdate() void
+        -ClampCenter(Vector2 position, Vector2 min, Vector2 max) Vector2$
+    }
+
+    class Character["Character"] {
+        <<abstract>>
+        -CharacterStats stats
+        -HitFlash flash
+        -double protectedUntil
+        +CharacterStats Stats
+        +bool IsAlive
+        +event Action~Character~ Died
+        ~Protect(float seconds) void
+        ~RestoreStats(CharacterStats saved) void
+        #Reset() void
+        #Awake() void
+        +TakeDamage(float damage) float
+        +Heal(float amount) void
+        #CreateDefaultStats() CharacterStats*
+        #OnDeath() void*
+    }
+
+    class CharacterStats["CharacterStats"] {
+        -float maxHP
+        -float moveSpeed
+        -float attackSpeed
+        -float attackDamage
+        -float defense
+        -float projectileRange
+        -int projectileCount
+        +float MaxHP
+        +float CurrentHP
+        +float MoveSpeed
+        -float hpPercentBonus
+        -float damageBonus
+        -float fireRateBonus
+        -float rangeBonus
+        -float movementBonus
+        +float AttackSpeed
+        +float AttackDamage
+        +float Defense
+        +float ProjectileRange
+        +int ProjectileCount
+        +int Pierce
+        +float Splash
+        +float Barrier
+        +double Luck
+        +int DashCapacity
+        +int DashReady
+        +float DashRecharge
+        +float DashProtection
+        ~CopyForPreview() CharacterStats
+        ~CharacterStats(float maxHP, float moveSpeed, float attackSpeed, float attackDamage, float defense, float projectileRange, int projectileCount)
+        ~Initialize() void
+        ~ApplyBaseTraining(int vitality, int power, int armor) void
+        ~Trained(float value, int level) float$
+        ~AddDash() void
+        ~ExtendDash() void
+        ~UseDash() bool
+        ~TickDash(float dt) void
+        ~ScaleForWave(int wave, bool isBoss) void
+        ~ApplyDamage(float amount) float
+        ~IncreaseMaxHP(float percentage) void
+        ~IncreaseAttack(float percentage) void
+        ~IncreaseFireRate(float percentage) void
+        ~AddProjectiles(int count) void
+        ~AddPierce(int count) void
+        ~AddSplash(float fraction) void
+        ~IncreaseMovement(float percentage) void
+        ~IncreaseRange(float percentage) void
+        ~IncreaseLuck(float amount) void
+        ~AddBarrier(float amount) void
+        ~Heal(float amount) void
+    }
+
+    class DirectionalCharacter["DirectionalCharacter"] {
+        -SpriteRenderer visual
+        -Rigidbody2D body
+        -Sprite idle
+        -Sprite[] front
+        -Sprite[] back
+        -Sprite[] side
+        -float framesPerSecond
+        ~Sprite Portrait
+        -Sprite[] facing
+        -float time
+        -bool moving
+        -LateUpdate() void
+    }
+
+    class Player["Player"] {
+        -Weapon weapon
+        #CreateDefaultStats() CharacterStats
+        +TryFire(Vector2 direction, Vector2? aimPoint) bool
+        #OnDeath() void
+    }
+
+    class PlayerController["PlayerController"] {
+        -Camera aimCamera
+        -SpriteRenderer map
+        -Transform aimPivot
+        -Player player
+        -Collider2D movementCollider
+        -Rigidbody2D movementBody
+        -Vector2 moveInput
+        -Vector3 aimScale
+        -Vector2 aimDirection
+        -int enabledFrame
+        -float dashLeft
+        -Vector2 dashDirection
+        -Vector2 pullVelocity
+        ~SpriteRenderer Map
+        ~Pull(Vector2 velocity) void
+        -OnEnable() void
+        -OnDisable() void
+        -Awake() void
+        -Update() void
+        -FixedUpdate() void
+        -LateUpdate() void
+    }
+
+    class Bullet["Bullet"] {
+        -List~RaycastHit2D~ Hits$
+        -ContactFilter2D SolidColliders$
+        -LineRenderer tracer
+        -float tracerLength
+        -Stack~Bullet~ inactive
+        -ImpactBurst impactBurst
+        -float splashRadius
+        -HashSet~Character~ struck
+        -List~Collider2D~ nearby$
+        -SpriteRenderer sprite
+        -int pierce
+        -float splash
+        -HashSet~Enemy~ splashTargets$
+        -Character owner
+        -bool firedByEnemy
+        -Vector2 direction
+        -float speed
+        -float remainingRange
+        -float damage
+        -Vector3 localBackward
+        -float tracerDistance
+        -Awake() void
+        +Rent(Bullet prefab, Vector3 position, Quaternion rotation) Bullet$
+        +Launch(Character owner, Vector2 direction, float speed, float range, float damage) void
+        -Update() void
+        -TryGetImpact(float distance, out Character target, out float contact) bool
+        -Explode(Vector2 center, Character primary) void
+        +Despawn() void
+    }
+
+    class HitFlash["HitFlash"] {
+        -Material material$
+        -SpriteRenderer source
+        -SpriteRenderer overlay
+        -float Duration$
+        -float HoldDuration$
+        -float PeakOpacity$
+        -double MinimumInterval$
+        -int Opacity$
+        -MaterialPropertyBlock properties
+        -double pulseStarted
+        -Awake() void
+        +Pulse() void
+        -LateUpdate() void
+    }
+
+    class ImpactBurst["ImpactBurst"] {
+        -LineRenderer ring
+        -ParticleSystem sparks
+        -Stack~ImpactBurst~ idle
+        -float age
+        -float extent
+        +Show(Vector2 position, float radius) void
+        -Update() void
+        -Animate() void
+    }
+
+    class Weapon["Weapon"] {
+        -Transform firePoint1
+        -Transform firePoint2
+        -SpriteRenderer muzzleFlash1
+        -SpriteRenderer muzzleFlash2
+        -float muzzleFlashDuration
+        -Bullet bulletPrefab
+        -float projectileSpeed
+        -float spreadAngle
+        -double nextShotTime
+        -double flash1Until
+        -double flash2Until
+        -bool useSecondFirePoint
+        -Update() void
+        +TryFire(Character owner, Vector2 direction, Vector2? aimPoint) bool
+        -FireVolley(Character owner, Vector3 origin, Vector2 direction, CharacterStats stats) void
+    }
+
+    class RunPhase["RunPhase"] {
+        <<enumeration>>
+        Menu
+        Transition
+        Playing
+        ChoosingCard
+        Paused
+        GameOver
+    }
+
+    class GameRunManager["GameRunManager"] {
+        -Player player
+        -MeleeEnemy meleePrefab
+        -RangedEnemy rangedPrefab
+        -FastEnemy fastPrefab
+        -BossEnemy[] bossPrefabs
+        -Transform regularSpawnGroup
+        -Transform bossSpawnGroup
+        -GoldPickup goldDrop
+        -float spawnInterval
+        -float minimumSpawnDistance
+        -float spawnClearance
+        -RunPhase phaseBeforePause
+        -bool clockFrozen
+        -bool previousAudioPause
+        -float previousTimeScale
+        -RunData incoming$
+        -RunData data
+        -HashSet~GoldPickup~ drops
+        -WaveManager waves
+        -PlayerController controller
+        -RunHud hud
+        -PrecinctProfile profile
+        ~RunPhase Phase
+        ~UpgradeCard[] Cards
+        ~int WaveNumber
+        ~CharacterStats Stats
+        -string[] Maps$
+        -ResetTransfer() void$
+        -Start() void
+        -Children(Transform group) Transform[]$
+        -EnterArena() IEnumerator
+        -AreaName(string scene) string$
+        ~StartRun() void
+        ~BuyUpgrade(Training track) void
+        -Travel(string destination, RunData transfer) IEnumerator
+        -Update() void
+        -BeginWave(int number) void
+        ~TogglePause() void
+        ~ResumeAfterSlide() void
+        -RestoreClock() void
+        ~Forfeit() void
+        ~ChooseCard(int index) void
+        -DrawMap(string previous) string$
+        ~RerollCards() void
+        -DropGold(Enemy enemy) void
+        ~Collect(GoldPickup drop) void
+        ~Expire(GoldPickup drop) void
+        ~Escape() void
+        -RefreshGold() void
+        -EndRun(Character dead) void
+        -Finish(bool escaped) void
+        -SuspendCombat() void
+        ~Restart() void
+        -OnDestroy() void
+    }
+
+    class RunData["GameRunManager.RunData"] {
+        +string id
+        +Gold gold
+        +UpgradeCards upgrades
+        +EnemySpawnSelector selector
+        +CharacterStats stats
+        +int nextWave
+        +int kills
+        +double playedSeconds
+    }
+
+    class Gold["Gold"] {
+        +BigInteger Earned
+        +BigInteger Spent
+        +long Balance
+        +Multiplier(int level) decimal$
+        +Reward(int wave, int bonusLevel) long$
+        +Credit(long reward) void
+        +TrySpend(long amount) bool
+    }
+
+    class GoldPickup["GoldPickup"] {
+        -float magnetRadius
+        -GameRunManager run
+        -Transform target
+        -float age
+        -SpriteRenderer visual
+        ~long Amount
+        ~Initialize(GameRunManager manager, Transform player, long amount) void
+        -Update() void
+    }
+
+    class Training["Training"] {
+        <<enumeration>>
+        Vitality
+        Power
+        Defense
+        Bounty
+    }
+
+    class PrecinctProfile["PrecinctProfile"] {
+        -string Key$
+        -Save data
+        +long Credits
+        +Level(Training track) int
+        +Price(Training track) BigInteger
+        +CanBuy(Training track) bool
+        +Buy(Training track) void
+        +Bank(string runId, long amount) void
+        +Apply(CharacterStats stats) void
+        -Store() void
+    }
+
+    class Save["PrecinctProfile.Save"] {
+        +long credits
+        +int vitality
+        +int power
+        +int defense
+        +int bounty
+        +string lastRun
+    }
+
+    class BossEnemy["BossEnemy"] {
+        -float chargeSpeed
+        -float chargeRange
+        -float warningTime
+        -Bullet orb
+        -LineRenderer groundCrack
+        -float stompRadius
+        -float stompDuration
+        -float pullSpeed
+        -List~RaycastHit2D~ obstacles
+        -ContactFilter2D solids
+        -PlayerController runner
+        -SmoothCameraFollow followCamera
+        -Vector3 artScale
+        -Vector2 chargeStart
+        -bool backingOut
+        -Move move
+        -Move pattern
+        -int nextPattern
+        -float timer
+        -Vector2 heading
+        -SpriteRenderer visual
+        -bool stompHit
+        #CreateDefaultStats() CharacterStats
+        #Awake() void
+        #Act() void
+        -FireCircle(float offset) void
+        -Blocked(Vector2 direction, float distance) bool
+        -DrawCrack(float extent, float width, Color color) void
+        #OnDeath() void
+        -Rest() void
+    }
+
+    class Move["BossEnemy.Move"] {
+        <<enumeration>>
+        Pursue
+        Warn
+        Charge
+        Volley
+        Stomp
+        Recover
+    }
+
+    class Enemy["Enemy"] {
+        <<abstract>>
+        -float attackReach
+        -float spawnClearance
+        -double nextAttackTime
+        -double nextRouteCheck
+        -bool direct
+        -float recoilTime
+        -Vector2 recoil
+        -ArenaRoutes routes
+        #Rigidbody2D Body
+        #Collider2D Hitbox
+        #Player Target
+        #Collider2D TargetHitbox
+        ~float SpawnClearance
+        #Awake() void
+        ~Spawn(Player player, Collider2D playerHitbox, int wave, ArenaRoutes routes) void
+        #FixedUpdate() void
+        #Act() void*
+        #HasClearApproach() bool
+        #MoveTowardTarget() void
+        #ChaseAndAttack() void
+        #TryStartAttack() bool
+        #OnDeath() void
+    }
+
+    class FastEnemy["FastEnemy"] {
+        #CreateDefaultStats() CharacterStats
+        #Act() void
+    }
+
+    class MeleeEnemy["MeleeEnemy"] {
+        #CreateDefaultStats() CharacterStats
+        #Act() void
+    }
+
+    class RangedEnemy["RangedEnemy"] {
+        -LineRenderer beam
+        -LineRenderer glow
+        -LineRenderer core
+        -AudioSource chargeSound
+        -float attackRange
+        -float windup
+        -List~RaycastHit2D~ hits$
+        -ContactFilter2D solids$
+        -Vector2 direction
+        -float remaining
+        -bool aiming
+        #CreateDefaultStats() CharacterStats
+        #Act() void
+        -Draw(LineRenderer line, Vector2 start, Vector2 end, float width, Color color) void$
+        -Show(bool visible) void
+        #OnDeath() void
+        -LateUpdate() void
+    }
+
+    class CardLift["CardLift"] {
+        -RectTransform rect
+        -Vector2 rest
+        -bool over
+        -OnEnable() void
+        +OnPointerEnter(PointerEventData e) void
+        +OnPointerExit(PointerEventData e) void
+        -Update() void
+        -OnDisable() void
+    }
+
+    class PauseDrawer["PauseDrawer"] {
+        -RectTransform sheet
+        -Image shade
+        -Image portrait
+        -Image healthFill
+        -TMP_Text runInfo
+        -TMP_Text health
+        -TMP_Text survival
+        -TMP_Text weapons
+        -TMP_Text mobility
+        -TMP_Text rewards
+        -Button resume
+        -Button restart
+        -Button mainMenu
+        -Action onClosed
+        -GameObject previousSelection
+        -float progress
+        -bool opening
+        ~Bind(GameRunManager run, Action closed) void
+        ~Open(Player player, int wave, long gold, int kills, double seconds, decimal multiplier) void
+        ~Toggle() void
+        -Update() void
+        -Draw() void
+    }
+
+    class RunCounter["RunCounter"] {
+        -long start
+        -long target
+        -float elapsed
+        +long Value
+        +Set(long amount) void
+        +Tick(float dt) bool
+    }
+
+    class RunHud["RunHud"] {
+        -TMP_Text waveLabel
+        -TMP_Text gameGoldLabel
+        -TMP_Text cardGoldLabel
+        -TMP_Text rerollLabel
+        -GameObject inGamePanel
+        -GameObject cardPanel
+        -UpgradeCardView[] cardViews
+        -Button rerollButton
+        -GameObject gameOverPanel
+        -TMP_Text resultLabel
+        -Button restartButton
+        -GameObject menuPanel
+        -GameObject shutterPanel
+        -RectTransform leftDoor
+        -RectTransform rightDoor
+        -TMP_Text areaLabel
+        -TMP_Text creditsLabel
+        -TMP_Text vitalityLabel
+        -TMP_Text powerLabel
+        -Button startButton
+        -Button vitalityButton
+        -Button powerButton
+        -Button defenseButton
+        -Button bountyButton
+        -GameObject characterPage
+        -Button characterButton
+        -Button backButton
+        -Button escapeButton
+        -Button againButton
+        -TMP_Text baseStats
+        -TMP_Text scoreLabel
+        -TMP_Text outcomeTitle
+        -TMP_Text dashLabel
+        -RawImage blurredArena
+        -RunCounter wallet
+        -RunCounter scoreCounter
+        -RunCounter creditCounter
+        -PrecinctProfile menuProfile
+        -Gold resultGold
+        -string resultHeader
+        -Image resultShade
+        -float resultProgress
+        -long secured
+        -TMP_Text escapeLabel
+        -RenderTexture snapshot
+        -Material blur
+        -int shownDash
+        -int shownSeconds
+        -Key[] CardKeys$
+        -GameRunManager run
+        -PauseDrawer pauseDrawer
+        -CanvasGroup cardInput
+        ~OpenPause(Player player, int wave, long gold, int kills, double seconds, decimal multiplier) void
+        ~TogglePauseDrawer() void
+        -OnDrawerClosed() void
+        ~Initialize(GameRunManager runManager) void
+        ~ShowMenu(PrecinctProfile profile) void
+        ~ShowCharacter(PrecinctProfile profile) void
+        -ShowTraining(Button button, TMP_Text label, Training track, string effect, float baseValue, PrecinctProfile profile) void$
+        ~Shutters(bool closing, string area, int wave) IEnumerator
+        -SetDoorOpening(float open) void
+        ~ShowWave(int number) void
+        ~ShowGold(long gold, long cost) void
+        ~ShowCards(UpgradeCard[] cards, CharacterStats stats) void
+        ~ShowResult(bool escaped, long score, int wave, int kills, Gold gold, double seconds) void
+        -RefreshResult() void
+        -CaptureArena() void
+        -ReleaseSnapshot() void
+        -OnDestroy() void
+        -Update() void
+    }
+
+    class UpgradeCardView["UpgradeCardView"] {
+        -Button button
+        -Image artwork
+        -TMP_Text title
+        -TMP_Text tier
+        -TMP_Text effect
+        -TMP_Text preview
+        -Sprite commonArt
+        -Sprite uncommonArt
+        -Sprite rareArt
+        -Sprite epicArt
+        -Sprite legendaryArt
+        ~Bind(Action onSelected) void
+        ~Show(UpgradeCard card, CharacterStats stats) void
+    }
+
+    class WorldHealthBar["WorldHealthBar"] {
+        -RectTransform healthFill
+        -Player player
+        -Awake() void
+        -LateUpdate() void
+    }
+
+    class UpgradeKind["UpgradeKind"] {
+        <<enumeration>>
+        Heal
+        MaxHPPercent
+        Attack
+        FireRate
+        Range
+        Luck
+        Mobility
+        Multishot
+        Pierce
+        Blast
+    }
+
+    class UpgradeCard["UpgradeCard"] {
+        <<struct>>
+        -string[] Names$
+        -string[] Numerals$
+        -int[,] Values$
+        +UpgradeKind Kind
+        +UpgradeRarity Rarity
+        -int Tier
+        -int Amount
+        -bool GrantsBarrier
+        +string Title
+        +string Numeral
+        +string EffectText
+        +UpgradeCard(UpgradeKind kind, UpgradeRarity rarity)
+        +Apply(CharacterStats stats) void
+        +BuildPreview(CharacterStats before) string
+    }
+
+    class UpgradeCards["UpgradeCards"] {
+        -UpgradeKind[] Kinds$
+        -int successfulRerolls
+        +long RerollCost
+        +Draw(int wave, CharacterStats stats) UpgradeCard[]
+        +TryReroll(int wave, CharacterStats stats, Gold gold, out UpgradeCard[] offer) bool
+    }
+
+    class UpgradeRarity["UpgradeRarity"] {
+        <<enumeration>>
+        Legendary
+        Epic
+        Rare
+        Uncommon
+        Common
+    }
+
+    class UpgradeRarityCalculator["UpgradeRarityCalculator"] {
+        <<static>>
+        -double GrowthPerWave$
+        -double LegendaryHardCap$
+        -double SoftCapThreshold$
+        -double SoftCapInitialStrength$
+        -double SoftCapDecayPerWave$
+        -double SoftCapMinStrength$
+        -double SoftCapFractionPerStrength$
+        -double Epsilon$
+        -double[] Minimum$
+        +GetPercentages(int wave, double luck) double[]$
+        +Roll(int wave, double luck) UpgradeRarity$
+        +Roll(double[] percentages) UpgradeRarity$
+    }
+
+    class ArenaRoutes["ArenaRoutes"] {
+        -float Step$
+        -int width
+        -int height
+        -Vector2 origin
+        -bool[] walkable
+        -byte East$
+        -byte West$
+        -byte North$
+        -byte South$
+        -byte[] links
+        -int[] toward
+        -int[] queue
+        -float radius
+        -int destination
+        -List~RaycastHit2D~ casts
+        -ContactFilter2D solids
+        +ArenaRoutes(Bounds floor, float radius)
+        -Link(int a, int b, byte forward, byte reverse) void
+        -Point(int index) Vector2
+        -Nearest(Vector2 p, bool fullClearance) int
+        +Clear(Vector2 p, Vector2 target) bool
+        -Clear(Vector2 p, Vector2 target, float clearance) bool
+        +CanReach(Vector2 position, Vector2 target) bool
+        +Waypoint(Vector2 p, Vector2 target) Vector2
+        -PrepareField(Vector2 target) bool
+        -Visit(int next, int from, int tail) void
+    }
+
+    class DifficultyScaler["DifficultyScaler"] {
+        <<static>>
+        +GetRegularEnemyCount(int wave) int$
+        +IsBossWave(int wave) bool$
+        +GetBossHP(int wave) float$
+        +GetBossAttack(int wave) float$
+        -ScaleBossStat(int wave, double previous, double current) float$
+        +ScaleHP(float baseHP, int wave) float$
+        +ScaleAttack(float baseAttack, int wave) float$
+        +ScaleDefense(float baseDefense, int wave) float$
+        -ScaleExponential(float baseValue, double growth, int completedWaves) float$
+        -GetCompletedWaves(int wave) int$
+    }
+
+    class EnemySpawner["EnemySpawner"] {
+        -Transform[] edges
+        -Transform[] center
+        -Enemy[] regular
+        -BossEnemy[] bosses
+        -Player player
+        -Bounds floor
+        -ArenaRoutes regularRoutes
+        -ArenaRoutes bossRoutes
+        -Collider2D hitbox
+        -Camera camera
+        -float minimumDistanceSquared
+        -float regularRadius
+        -float bossRadius
+        -Collider2D[] obstruction
+        -ContactFilter2D solids
+        +EnemySpawner(Transform[] edges, Transform[] center, MeleeEnemy melee, RangedEnemy ranged, FastEnemy fast, BossEnemy[] bosses, Player player, Collider2D hitbox, float distance, float clearance)
+        -Routes(bool boss) ArenaRoutes
+        +TryFindPoint(bool boss, out Transform point) bool
+        -IsVisible(Vector2 position, float radius) bool
+        +Spawn(Transform point, bool boss, EnemyType type, int wave) Enemy
+    }
+
+    class EnemyType["EnemyType"] {
+        <<enumeration>>
+        Melee
+        Ranged
+        Fast
+    }
+
+    class EnemySpawnSelector["EnemySpawnSelector"] {
+        -int GroupSize$
+        -int[] previousWeights
+        -int[] credit
+        -int[] remaining
+        -EnemyType[] slots
+        -int cursor
+        +int DrawRange
+        +Remaining(EnemyType type) int
+        +Begin(int[] weights, int count) void
+        +Peek(int roll) EnemyType
+        +Commit(int roll) void
+    }
+
+    class SpawnRatioCalculator["SpawnRatioCalculator"] {
+        <<static>>
+        +GetRegularWeights(int wave) int[]$
+    }
+
+    class WavePhase["WavePhase"] {
+        <<enumeration>>
+        SpawningRegular
+        ClearingRegular
+        WaitingForBoss
+        BossFight
+        Completed
+    }
+
+    class WaveManager["WaveManager"] {
+        -float InitialDelay$
+        -float SpawnRetryDelay$
+        -EnemySpawner spawner
+        -float spawnInterval
+        -HashSet~Enemy~ livingEnemies
+        -EnemySpawnSelector selector
+        -float spawnIn
+        -int regularSpawned
+        -int regularTarget
+        -bool bossWave
+        +int Number
+        +WavePhase Phase
+        +bool Cleared
+        +event Action~Enemy~ EnemyDefeated
+        +WaveManager(EnemySpawner spawner, float spawnInterval, EnemySpawnSelector selector)
+        +Begin(int number) void
+        +Tick(float dt) void
+        -RecordDefeat(Character character) void
+        +Dispose() void
+    }
+
+    SmoothCameraFollow --> PlayerController
+    Character --> CharacterStats
+    Character --> HitFlash
+    Character ..> Player
+    Character ..> SmoothCameraFollow
+    CharacterStats ..> DifficultyScaler
+    Player --|> Character
+    Player ..> CharacterStats
+    Player --> Weapon
+    PlayerController ..> Character
+    PlayerController ..> CharacterStats
+    PlayerController --> Player
+    Bullet --> Character
+    Bullet ..> CharacterStats
+    Bullet --> Enemy
+    Bullet --> ImpactBurst
+    Weapon --> Bullet
+    Weapon ..> Character
+    Weapon ..> CharacterStats
+    GameRunManager --> BossEnemy
+    GameRunManager ..> Bullet
+    GameRunManager ..> Character
+    GameRunManager ..> CharacterStats
+    GameRunManager ..> DifficultyScaler
+    GameRunManager ..> Enemy
+    GameRunManager ..> EnemySpawner
+    GameRunManager --> FastEnemy
+    GameRunManager ..> Gold
+    GameRunManager --> GoldPickup
+    GameRunManager --> MeleeEnemy
+    GameRunManager --> Player
+    GameRunManager --> PlayerController
+    GameRunManager --> PrecinctProfile
+    GameRunManager --> RangedEnemy
+    GameRunManager --> RunData
+    GameRunManager --> RunHud
+    GameRunManager --> RunPhase
+    GameRunManager ..> Training
+    GameRunManager ..> UpgradeCard
+    GameRunManager ..> UpgradeCards
+    GameRunManager *-- WaveManager
+    RunData --> CharacterStats
+    RunData *-- "1" EnemySpawnSelector
+    RunData *-- "1" Gold
+    RunData *-- "1" UpgradeCards
+    GoldPickup --> GameRunManager
+    GoldPickup ..> RunPhase
+    PrecinctProfile ..> CharacterStats
+    PrecinctProfile *-- Save
+    PrecinctProfile ..> Training
+    BossEnemy --> Bullet
+    BossEnemy ..> Character
+    BossEnemy ..> CharacterStats
+    BossEnemy --|> Enemy
+    BossEnemy --> Move
+    BossEnemy --> PlayerController
+    BossEnemy --> SmoothCameraFollow
+    Enemy --> ArenaRoutes
+    Enemy ..> BossEnemy
+    Enemy --|> Character
+    Enemy ..> CharacterStats
+    Enemy ..> FastEnemy
+    Enemy ..> MeleeEnemy
+    Enemy ..> Player
+    FastEnemy ..> CharacterStats
+    FastEnemy --|> Enemy
+    MeleeEnemy ..> CharacterStats
+    MeleeEnemy --|> Enemy
+    RangedEnemy ..> Character
+    RangedEnemy ..> CharacterStats
+    RangedEnemy --|> Enemy
+    RangedEnemy ..> Player
+    PauseDrawer ..> Character
+    PauseDrawer ..> CharacterStats
+    PauseDrawer ..> DirectionalCharacter
+    PauseDrawer ..> GameRunManager
+    PauseDrawer ..> Player
+    RunHud ..> CharacterStats
+    RunHud --> GameRunManager
+    RunHud --> Gold
+    RunHud --> "0..1" PauseDrawer
+    RunHud ..> Player
+    RunHud --> PrecinctProfile
+    RunHud *-- "3" RunCounter
+    RunHud ..> RunPhase
+    RunHud ..> Training
+    RunHud ..> UpgradeCard
+    RunHud --> "3" UpgradeCardView
+    UpgradeCardView ..> CharacterStats
+    UpgradeCardView ..> UpgradeCard
+    UpgradeCardView ..> UpgradeRarity
+    WorldHealthBar ..> Character
+    WorldHealthBar ..> CharacterStats
+    WorldHealthBar --> Player
+    UpgradeCard ..> CharacterStats
+    UpgradeCard ..> UpgradeKind
+    UpgradeCard ..> UpgradeRarity
+    UpgradeCards ..> CharacterStats
+    UpgradeCards ..> Gold
+    UpgradeCards ..> UpgradeCard
+    UpgradeCards --> UpgradeKind
+    UpgradeCards ..> UpgradeRarity
+    UpgradeCards ..> UpgradeRarityCalculator
+    UpgradeRarityCalculator ..> UpgradeRarity
+    EnemySpawner --> ArenaRoutes
+    EnemySpawner --> BossEnemy
+    EnemySpawner --> Enemy
+    EnemySpawner ..> EnemyType
+    EnemySpawner ..> FastEnemy
+    EnemySpawner ..> MeleeEnemy
+    EnemySpawner --> Player
+    EnemySpawner ..> PlayerController
+    EnemySpawner ..> RangedEnemy
+    EnemySpawnSelector --> EnemyType
+    WaveManager ..> Character
+    WaveManager ..> DifficultyScaler
+    WaveManager --> "0..*" Enemy
+    WaveManager --> EnemySpawnSelector
+    WaveManager --> EnemySpawner
+    WaveManager ..> EnemyType
+    WaveManager ..> SpawnRatioCalculator
+    WaveManager ..> WavePhase
