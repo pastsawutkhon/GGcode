@@ -33,6 +33,7 @@ namespace ATM.Gameplay
         private PrecinctProfile menuProfile;
         private Gold resultGold;
         private string resultHeader;
+        private Image resultShade;
         private float resultProgress;
         private long secured;
         private TMP_Text escapeLabel;
@@ -152,6 +153,7 @@ namespace ATM.Gameplay
             {
                 menuPanel.SetActive(false);
                 cardPanel.SetActive(false);
+                ReleaseSnapshot();
                 yield return new WaitForSecondsRealtime(.18f);
             }
             else
@@ -207,12 +209,22 @@ namespace ATM.Gameplay
             resultGold = gold;
             resultProgress = 0;
             secured = score;
+            var backdrop = new GameObject("Result backdrop", typeof(RectTransform), typeof(Image));
+            var bounds = (RectTransform)backdrop.transform;
+            bounds.SetParent(gameOverPanel.transform.parent, false);
+            bounds.SetSiblingIndex(gameOverPanel.transform.GetSiblingIndex());
+            bounds.anchorMin = Vector2.zero;
+            bounds.anchorMax = Vector2.one;
+            bounds.offsetMin = bounds.offsetMax = Vector2.zero;
+            resultShade = backdrop.GetComponent<Image>();
+            resultShade.color = escaped ? new Color(.025f,.095f,.085f) : new Color(.065f,.035f,.045f);
             RefreshResult();
             gameOverPanel.SetActive(true);
         }
 
         private void RefreshResult()
         {
+            resultShade.canvasRenderer.SetAlpha(Mathf.Lerp(.15f, .63f, resultProgress));
             int t = Mathf.RoundToInt(Mathf.SmoothStep(0,1,resultProgress) * 1000f);
             var earned = resultGold.Earned * t / 1000;
             var spent = resultGold.Spent * t / 1000;
@@ -250,7 +262,7 @@ namespace ATM.Gameplay
         private void ReleaseSnapshot()
         {
             if (snapshot == null) return;
-            blurredArena.texture = null;
+            if (blurredArena != null) blurredArena.texture = null;
             RenderTexture.ReleaseTemporary(snapshot);
             snapshot = null;
         }

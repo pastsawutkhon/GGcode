@@ -1,5 +1,6 @@
 Shader "ATM/HitFlash" {
- Properties { [PerRendererData] _MainTex ("Sprite", 2D) = "white" {} }
+ Properties { [PerRendererData] _MainTex ("Sprite", 2D) = "white" {}
+ [PerRendererData] _FlashOpacity ("Flash opacity", Range(0,1)) = 0 }
  SubShader {
  Tags { "Queue"="Transparent" "RenderType"="Transparent" "CanUseSpriteAtlas"="True" }
  Cull Off Lighting Off ZWrite Off Blend SrcAlpha OneMinusSrcAlpha
@@ -11,8 +12,9 @@ Shader "ATM/HitFlash" {
  struct Input { float4 vertex:POSITION; float2 uv:TEXCOORD0; fixed4 color:COLOR; };
  struct Output { float4 pos:SV_POSITION; float2 uv:TEXCOORD0; fixed4 color:COLOR; };
  sampler2D _MainTex;
+ half _FlashOpacity;
  Output vert(Input v) { Output o; o.pos=UnityObjectToClipPos(v.vertex); o.uv=v.uv; o.color=v.color; return o; }
- fixed4 frag(Output i):SV_Target { return fixed4(1,1,1,tex2D(_MainTex,i.uv).a*i.color.a); }
+ fixed4 frag(Output i):SV_Target { return fixed4(1,1,1,tex2D(_MainTex,i.uv).a*_FlashOpacity); }
  ENDCG
  }
  }

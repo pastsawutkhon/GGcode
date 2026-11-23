@@ -37,6 +37,8 @@ namespace ATM.Gameplay
                 chargeSound.Play();
             }
             Body.linearVelocity = Vector2.zero;
+            if (aiming && remaining > .4f && offset.sqrMagnitude > .0001f)
+                direction = offset.normalized;
             float distance = Stats.ProjectileRange;
             Player victim = null;
             Physics2D.Raycast(origin, direction, solids, hits, distance);

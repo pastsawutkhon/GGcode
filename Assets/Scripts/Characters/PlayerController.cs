@@ -19,7 +19,12 @@ namespace ATM.Gameplay
         private Vector2 aimDirection = Vector2.right;
         private int enabledFrame;
         private float dashLeft;
-        private Vector2 dashDirection;
+        private Vector2 dashDirection, pullVelocity;
+
+        internal void Pull(Vector2 velocity)
+        {
+            if (isActiveAndEnabled) pullVelocity += velocity;
+        }
 
         internal SpriteRenderer Map => map;
 
@@ -29,6 +34,7 @@ namespace ATM.Gameplay
         {
             moveInput = Vector2.zero;
             dashLeft = 0f;
+            pullVelocity = Vector2.zero;
             if (movementBody != null)
                 movementBody.linearVelocity = Vector2.zero;
         }
@@ -81,6 +87,8 @@ namespace ATM.Gameplay
                 velocity = dashDirection * 14f;
                 dashLeft -= Time.fixedDeltaTime;
             }
+            else velocity += pullVelocity;
+            pullVelocity = Vector2.zero;
             if (map != null)
             {
                 Vector2 current = movementBody.position;

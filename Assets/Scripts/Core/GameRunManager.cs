@@ -123,7 +123,7 @@ namespace ATM.Gameplay
         internal void StartRun()
         {
             if (Phase == RunPhase.Menu || Phase == RunPhase.GameOver)
-                StartCoroutine(Travel("MAP 1", new RunData()));
+                StartCoroutine(Travel(DrawMap(null), new RunData()));
         }
 
         internal void BuyUpgrade(Training track)
@@ -213,10 +213,17 @@ namespace ATM.Gameplay
                 return;
             }
             data.stats = player.Stats;
-            string current = gameObject.scene.name;
-            int mapIndex = current == "MAP 1" ? 0 : current == "MAP 2" ? 1 : 2;
-            int next = (mapIndex + Random.Range(1, 3)) % 3 + 1;
-            StartCoroutine(Travel("MAP " + next, data));
+            StartCoroutine(Travel(DrawMap(gameObject.scene.name), data));
+        }
+
+        private static readonly string[] Maps = { "MAP 1", "MAP 2", "MAP 3" };
+
+        private static string DrawMap(string previous)
+        {
+            int excluded = System.Array.IndexOf(Maps, previous);
+            int index = Random.Range(0, excluded < 0 ? Maps.Length : Maps.Length - 1);
+            if (excluded >= 0 && index >= excluded) index++;
+            return Maps[index];
         }
 
         internal void RerollCards()

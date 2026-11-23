@@ -9,7 +9,7 @@ namespace ATM.Waves
 
         public static bool IsBossWave(int wave) => (GetCompletedWaves(wave) + 1) % 10 == 0;
 
-        public static float GetBossHP(int wave) => ScaleBossStat(wave, 3500d, 5800d);
+        public static float GetBossHP(int wave) => ScaleBossStat(wave, 2500d, 4200d);
 
         public static float GetBossAttack(int wave) => ScaleBossStat(wave, 150d, 200d);
 

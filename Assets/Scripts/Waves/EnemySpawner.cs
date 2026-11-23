@@ -39,7 +39,7 @@ namespace ATM.Gameplay
             minimumDistanceSquared = distance * distance;
         }
 
-        private ArenaRoutes Routes(bool boss) => boss ? bossRoutes ??= new ArenaRoutes(floor, 1.5f) : regularRoutes;
+        private ArenaRoutes Routes(bool boss) => boss ? bossRoutes ??= new ArenaRoutes(floor, bossRadius) : regularRoutes;
 
         public bool TryFindPoint(bool boss, out Transform point)
         {

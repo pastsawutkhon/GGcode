@@ -15,6 +15,14 @@ namespace ATM.Gameplay
 
         private double lastPulse = -1;
         private Vector2 shakeOffset;
+        private double lastTremor = -1;
+        private float tremorStrength;
+        internal void Tremor(float strength)
+        {
+            lastTremor = Time.timeAsDouble;
+            tremorStrength = Mathf.Clamp01(strength);
+        }
+
         public void Pulse()
         {
             if (Time.timeAsDouble - lastPulse >= .25) lastPulse = Time.timeAsDouble;
@@ -66,6 +74,9 @@ namespace ATM.Gameplay
             float age = (float)(Time.timeAsDouble - lastPulse);
             float intensity = .045f * Mathf.Clamp01(1f - age / .11f);
             shakeOffset = intensity * new Vector2(Mathf.Sin(age * 140), Mathf.Sin(age * 190));
+            float rumble = tremorStrength * .052f * Mathf.Clamp01(1f - (float)(Time.timeAsDouble - lastTremor) / .1f);
+            float phase = (float)(Time.timeAsDouble % 60);
+            shakeOffset += new Vector2(Mathf.Sin(phase * 62f) * .5f, Mathf.Sin(phase * 82f)) * rumble;
             transform.position = new Vector3(next.x + shakeOffset.x, next.y + shakeOffset.y, position.z);
         }
 
