@@ -418,6 +418,35 @@ classDiagram
     PauseDrawer ..> CharacterStats : displays live stats
     RunHud *-- "3" RunCounter : animates totals
     WorldHealthBar --> Player : reads current health
+
+    class MonoBehaviour
+    class IDisposable {
+        <<interface>>
+    }
+    class IPointerEnterHandler {
+        <<interface>>
+    }
+    class IPointerExitHandler {
+        <<interface>>
+    }
+    MonoBehaviour <|-- Bullet
+    MonoBehaviour <|-- CardLift
+    MonoBehaviour <|-- Character
+    MonoBehaviour <|-- DirectionalCharacter
+    MonoBehaviour <|-- GameRunManager
+    MonoBehaviour <|-- GoldPickup
+    MonoBehaviour <|-- HitFlash
+    MonoBehaviour <|-- ImpactBurst
+    MonoBehaviour <|-- PauseDrawer
+    MonoBehaviour <|-- PlayerController
+    MonoBehaviour <|-- RunHud
+    MonoBehaviour <|-- SmoothCameraFollow
+    MonoBehaviour <|-- UpgradeCardView
+    MonoBehaviour <|-- Weapon
+    MonoBehaviour <|-- WorldHealthBar
+    IDisposable <|.. WaveManager
+    IPointerEnterHandler <|.. CardLift
+    IPointerExitHandler <|.. CardLift
 ```
 
 ## ภาพรวมรัน

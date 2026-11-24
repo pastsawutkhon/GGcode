@@ -1,0 +1,442 @@
+classDiagram
+    direction TB
+
+    class GameRunManager {
+        <<MonoBehaviour>>
+        -RunData data
+        -WaveManager waves
+        ~RunPhase Phase
+        ~UpgradeCard[] Cards
+        ~StartRun() void
+        -BeginWave(int number) void
+        ~TogglePause() void
+        ~ChooseCard(int index) void
+        -DrawMap(string previous) string$
+        ~RerollCards() void
+        ~Escape() void
+        -Finish(bool escaped) void
+    }
+
+    class RunPhase {
+        <<enumeration>>
+        Menu
+        Transition
+        Playing
+        ChoosingCard
+        Paused
+        GameOver
+    }
+
+    class RunData["GameRunManager.RunData"] {
+        +Gold gold
+        +UpgradeCards upgrades
+        +EnemySpawnSelector selector
+        +CharacterStats stats
+        +int nextWave
+        +int kills
+        +double playedSeconds
+    }
+
+    class WaveManager {
+        -HashSet~Enemy~ livingEnemies
+        +int Number
+        +WavePhase Phase
+        +Action~Enemy~ EnemyDefeated
+        +Begin(int number) void
+        +Tick(float dt) void
+        -RecordDefeat(Character character) void
+    }
+
+    class WavePhase {
+        <<enumeration>>
+        SpawningRegular
+        ClearingRegular
+        WaitingForBoss
+        BossFight
+        Completed
+    }
+
+    class EnemySpawner {
+        -Transform[] edges
+        -Transform[] center
+        +TryFindPoint(bool boss, out Transform point) bool
+        +Spawn(Transform point, bool boss, EnemyType type, int wave) Enemy
+    }
+
+    class EnemySpawnSelector {
+        -int[] remaining
+        -EnemyType[] slots
+        +Begin(int[] weights, int count) void
+        +Peek(int roll) EnemyType
+        +Commit(int roll) void
+    }
+
+    class EnemyType {
+        <<enumeration>>
+        Melee
+        Ranged
+        Fast
+    }
+
+    class SpawnRatioCalculator {
+        <<static>>
+        +GetRegularWeights(int wave) int[]$
+    }
+
+    class ArenaRoutes {
+        -float radius
+        +CanReach(Vector2 position, Vector2 target) bool
+        +Waypoint(Vector2 p, Vector2 target) Vector2
+    }
+
+    class DifficultyScaler {
+        <<static>>
+        +GetRegularEnemyCount(int wave) int$
+        +IsBossWave(int wave) bool$
+        +GetBossHP(int wave) float$
+        +GetBossAttack(int wave) float$
+        +ScaleHP(float baseHP, int wave) float$
+        +ScaleAttack(float baseAttack, int wave) float$
+        +ScaleDefense(float baseDefense, int wave) float$
+    }
+
+    class Character {
+        <<abstract>>
+        +CharacterStats Stats
+        +bool IsAlive
+        +Action~Character~ Died
+        +TakeDamage(float damage) float
+        +Heal(float amount) void
+        #OnDeath() void*
+    }
+
+    class CharacterStats {
+        +float MaxHP
+        +float CurrentHP
+        +float AttackDamage
+        +float Defense
+        +int Pierce
+        +float Splash
+        +float Barrier
+        +double Luck
+        +int DashCapacity
+        ~ScaleForWave(int wave, bool isBoss) void
+        ~ApplyDamage(float amount) float
+    }
+
+    class Player {
+        -Weapon weapon
+        +TryFire(Vector2 direction, Vector2? aimPoint) bool
+    }
+
+    class PlayerController {
+        <<MonoBehaviour>>
+        ~Pull(Vector2 velocity) void
+        ~SpriteRenderer Map
+        -FixedUpdate() void
+        -LateUpdate() void
+    }
+
+    class Enemy {
+        <<abstract>>
+        #Player Target
+        ~Spawn(Player player, Collider2D playerHitbox, int wave, ArenaRoutes routes) void
+        #Act() void*
+        #MoveTowardTarget() void
+    }
+
+    class MeleeEnemy {
+        #Act() void
+    }
+
+    class FastEnemy {
+        #Act() void
+    }
+
+    class RangedEnemy {
+        -LineRenderer beam
+        -float windup
+        -bool aiming
+        #Act() void
+    }
+
+    class BossEnemy {
+        -Bullet orb
+        -Move move
+        #Act() void
+        -FireCircle(float offset) void
+        -Blocked(Vector2 direction, float distance) bool
+        -DrawCrack(float extent, float width, Color color) void
+    }
+
+    class Move["BossEnemy.Move"] {
+        <<enumeration>>
+        Pursue
+        Warn
+        Charge
+        Volley
+        Stomp
+        Recover
+    }
+
+    class Weapon {
+        <<MonoBehaviour>>
+        -Transform firePoint1
+        -Transform firePoint2
+        -float spreadAngle
+        +TryFire(Character owner, Vector2 direction, Vector2? aimPoint) bool
+        -FireVolley(Character owner, Vector3 origin, Vector2 direction, CharacterStats stats) void
+    }
+
+    class Bullet {
+        <<MonoBehaviour>>
+        -Stack~Bullet~ inactive
+        -Character owner
+        +Rent(Bullet prefab, Vector3 position, Quaternion rotation) Bullet$
+        +Launch(Character owner, Vector2 direction, float speed, float range, float damage) void
+        -Explode(Vector2 center, Character primary) void
+        +Despawn() void
+    }
+
+    class ImpactBurst {
+        <<MonoBehaviour>>
+        -Stack~ImpactBurst~ idle
+        +Show(Vector2 position, float radius) void
+    }
+
+    class HitFlash {
+        <<MonoBehaviour>>
+        -double MinimumInterval$
+        +Pulse() void
+    }
+
+    class DirectionalCharacter {
+        <<MonoBehaviour>>
+        ~Sprite Portrait
+        -LateUpdate() void
+    }
+
+    class SmoothCameraFollow {
+        <<MonoBehaviour>>
+        -Transform target
+        ~Tremor(float strength) void
+        +Pulse() void
+    }
+
+    class Gold {
+        +BigInteger Earned
+        +BigInteger Spent
+        +long Balance
+        +Reward(int wave, int bonusLevel) long$
+        +Credit(long reward) void
+        +TrySpend(long amount) bool
+    }
+
+    class GoldPickup {
+        <<MonoBehaviour>>
+        ~long Amount
+        ~Initialize(GameRunManager manager, Transform player, long amount) void
+    }
+
+    class PrecinctProfile {
+        +long Credits
+        +Price(Training track) BigInteger
+        +Buy(Training track) void
+        +Bank(string runId, long amount) void
+        +Apply(CharacterStats stats) void
+    }
+
+    class Training {
+        <<enumeration>>
+        Vitality
+        Power
+        Defense
+        Bounty
+    }
+
+    class Save["PrecinctProfile.Save"] {
+        +long credits
+        +int vitality
+        +int power
+        +int defense
+        +int bounty
+        +string lastRun
+    }
+
+    class UpgradeCards {
+        +long RerollCost
+        +Draw(int wave, CharacterStats stats) UpgradeCard[]
+        +TryReroll(int wave, CharacterStats stats, Gold gold, out UpgradeCard[] offer) bool
+    }
+
+    class UpgradeCard {
+        <<struct>>
+        +UpgradeKind Kind
+        +UpgradeRarity Rarity
+        +Apply(CharacterStats stats) void
+        +BuildPreview(CharacterStats before) string
+    }
+
+    class UpgradeKind {
+        <<enumeration>>
+        Heal
+        MaxHPPercent
+        Attack
+        FireRate
+        Range
+        Luck
+        Mobility
+        Multishot
+        Pierce
+        Blast
+    }
+
+    class UpgradeRarity {
+        <<enumeration>>
+        Legendary
+        Epic
+        Rare
+        Uncommon
+        Common
+    }
+
+    class UpgradeRarityCalculator {
+        <<static>>
+        +GetPercentages(int wave, double luck) double[]$
+        +Roll(int wave, double luck) UpgradeRarity$
+        +Roll(double[] percentages) UpgradeRarity$
+    }
+
+    class RunHud {
+        <<MonoBehaviour>>
+        -UpgradeCardView[] cardViews
+        ~OpenPause(Player player, int wave, long gold, int kills, double seconds, decimal multiplier) void
+        ~ShowMenu(PrecinctProfile profile) void
+        ~ShowCharacter(PrecinctProfile profile) void
+        ~ShowCards(UpgradeCard[] cards, CharacterStats stats) void
+        ~ShowResult(bool escaped, long score, int wave, int kills, Gold gold, double seconds) void
+    }
+
+    class UpgradeCardView {
+        <<MonoBehaviour>>
+        ~Bind(Action onSelected) void
+        ~Show(UpgradeCard card, CharacterStats stats) void
+    }
+
+    class CardLift {
+        <<MonoBehaviour>>
+        +OnPointerEnter(PointerEventData e) void
+        +OnPointerExit(PointerEventData e) void
+    }
+
+    class PauseDrawer {
+        <<MonoBehaviour>>
+        ~Bind(GameRunManager run, Action closed) void
+        ~Open(Player player, int wave, long gold, int kills, double seconds, decimal multiplier) void
+        ~Toggle() void
+    }
+
+    class RunCounter {
+        +long Value
+        +Set(long amount) void
+        +Tick(float dt) bool
+    }
+
+    class WorldHealthBar {
+        <<MonoBehaviour>>
+        -RectTransform healthFill
+        -LateUpdate() void
+    }
+
+    Character <|-- Player
+    Character <|-- Enemy
+    Enemy <|-- MeleeEnemy
+    Enemy <|-- FastEnemy
+    Enemy <|-- RangedEnemy
+    Enemy <|-- BossEnemy
+    GameRunManager --> RunPhase : current phase
+    GameRunManager --> RunData : transfers across maps
+    GameRunManager *-- "0..1" WaveManager : drives waves in arena
+    GameRunManager --> Player : listens for death
+    GameRunManager --> RunHud : presents run state
+    GameRunManager --> PrecinctProfile : buys training and banks escape
+    RunData *-- "1" EnemySpawnSelector : carries spawn quota
+    RunData *-- "1" Gold : run wallet
+    RunData *-- "1" UpgradeCards : rerolls this run
+    RunData --> "0..1" CharacterStats : carries between arenas
+    WaveManager --> WavePhase : wave state
+    WaveManager ..> DifficultyScaler : count and boss schedule
+    WaveManager ..> SpawnRatioCalculator : gets weights
+    WaveManager --> EnemySpawnSelector : Begin / Peek / Commit
+    EnemySpawnSelector ..> EnemyType : reserves slots
+    WaveManager --> EnemySpawner : requests marker then spawn
+    WaveManager --> "0..*" Enemy : tracks living enemies
+    EnemySpawner --> ArenaRoutes : checks reachability
+    EnemySpawner ..> Enemy : instantiates prefab
+    Enemy --> ArenaRoutes : routes around obstacles
+    Enemy --> Player : pursues
+    Character --> "1" CharacterStats : health and combat stats
+    CharacterStats ..> DifficultyScaler : scales spawned enemy
+    PlayerController --> Player : movement and firing input
+    Player --> Weapon : fires through
+    Weapon --> Bullet : rents from prefab pool
+    BossEnemy --> Bullet : rents volley orbs
+    BossEnemy --> Move : attack state
+    BossEnemy --> PlayerController : stomp pulls player
+    BossEnemy --> SmoothCameraFollow : stomp tremor
+    SmoothCameraFollow --> PlayerController : reads map bounds
+    Bullet --> Character : owner and hit target
+    Bullet --> ImpactBurst : splash feedback
+    Character --> HitFlash : damage feedback
+    GameRunManager --> GoldPickup : drops on enemy defeat
+    GoldPickup --> GameRunManager : collect or expire
+    GameRunManager ..> Gold : credits pickups
+    PrecinctProfile *-- "1" Save : persists credits and levels
+    PrecinctProfile ..> Training : buys track
+    PrecinctProfile ..> CharacterStats : applies permanent stats
+    UpgradeCards ..> UpgradeRarityCalculator : rolls each tier
+    UpgradeRarityCalculator ..> UpgradeRarity : returns tier
+    UpgradeCards ..> UpgradeCard : draws three offers
+    UpgradeCards ..> Gold : spends on reroll
+    UpgradeCard --> UpgradeKind : effect type
+    UpgradeCard --> UpgradeRarity : tier
+    UpgradeCard ..> CharacterStats : previews and applies
+    GameRunManager --> "0..3" UpgradeCard : active offer
+    RunHud --> GameRunManager : forwards commands
+    RunHud --> "3" UpgradeCardView : shows choices
+    UpgradeCardView ..> UpgradeCard : displays offer
+    CardLift .. UpgradeCardView : same card prefab
+    RunHud --> "0..1" PauseDrawer : opens during run
+    PauseDrawer ..> DirectionalCharacter : reads portrait
+    PauseDrawer ..> CharacterStats : displays live stats
+    RunHud *-- "3" RunCounter : animates totals
+    WorldHealthBar --> Player : reads current health
+
+    class MonoBehaviour
+    class IDisposable {
+        <<interface>>
+    }
+    class IPointerEnterHandler {
+        <<interface>>
+    }
+    class IPointerExitHandler {
+        <<interface>>
+    }
+    MonoBehaviour <|-- Bullet
+    MonoBehaviour <|-- CardLift
+    MonoBehaviour <|-- Character
+    MonoBehaviour <|-- DirectionalCharacter
+    MonoBehaviour <|-- GameRunManager
+    MonoBehaviour <|-- GoldPickup
+    MonoBehaviour <|-- HitFlash
+    MonoBehaviour <|-- ImpactBurst
+    MonoBehaviour <|-- PauseDrawer
+    MonoBehaviour <|-- PlayerController
+    MonoBehaviour <|-- RunHud
+    MonoBehaviour <|-- SmoothCameraFollow
+    MonoBehaviour <|-- UpgradeCardView
+    MonoBehaviour <|-- Weapon
+    MonoBehaviour <|-- WorldHealthBar
+    IDisposable <|.. WaveManager
+    IPointerEnterHandler <|.. CardLift
+    IPointerExitHandler <|.. CardLift
